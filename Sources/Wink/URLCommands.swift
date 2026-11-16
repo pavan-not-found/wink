@@ -19,12 +19,14 @@ enum URLCommands {
 
         switch command {
         case "start", "on":
-            if let f = q["for"], let d = parse(f) {
-                session.start(duration: d)
-            } else if let u = q["until"], let date = parseUntil(u) {
-                session.start(duration: date.timeIntervalSinceNow)
+            if let f = q["for"] {
+                guard let d = parse(f) else { return }      // nonsense is ignored, not guessed at
+                session.start(duration: d, interactive: false)
+            } else if let u = q["until"] {
+                guard let date = parseUntil(u) else { return }
+                session.start(duration: date.timeIntervalSinceNow, interactive: false)
             } else {
-                session.start()
+                session.start(duration: session.selectedStop.resolvedDuration(), interactive: false)
             }
         case "stop", "off": session.stop()
         case "pause": session.pause()
@@ -41,7 +43,10 @@ enum URLCommands {
     static func parse(_ s: String) -> TimeInterval?? {
         let s = s.lowercased().trimmingCharacters(in: .whitespaces)
         if ["forever", "inf", "infinite", "always", "∞"].contains(s) { return .some(nil) }
-        if let n = Double(s) { return .some(n * 60) }            // bare number = minutes
+        if s.allSatisfy({ $0.isNumber || $0 == "." }), let n = Double(s) {   // bare number = minutes
+            let t = n * 60
+            return (t.isFinite && t > 0 && t <= Session.maxDuration) ? .some(t) : nil
+        }
         let units: [Character: Double] = ["s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800]
         var total = 0.0, num = ""
         for ch in s {
@@ -50,7 +55,7 @@ enum URLCommands {
             total += n * u
             num = ""
         }
-        guard num.isEmpty, total > 0 else { return nil }
+        guard num.isEmpty, total > 0, total.isFinite, total <= Session.maxDuration else { return nil }
         return .some(total)
     }
 

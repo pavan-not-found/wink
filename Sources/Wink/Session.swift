@@ -43,12 +43,7 @@ final class Session: ObservableObject {
         power.recover(sessionRunning: mode == .running)
         refreshExternal()
 
-        let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.tick() }
-        }
-        t.tolerance = 0.15
-        RunLoop.main.add(t, forMode: .common)
-        timer = t
+        retime()
 
         observers.append(NotificationCenter.default.addObserver(
             forName: ProcessInfo.thermalStateDidChangeNotification, object: nil, queue: .main
@@ -87,9 +82,21 @@ final class Session: ObservableObject {
         start(duration: stop.resolvedDuration())
     }
 
-    func start(duration: TimeInterval?) {
+    /// Longest session Wink accepts: a year. Also guards against nonsense from URLs.
+    static let maxDuration: TimeInterval = 366 * 86400
+
+    static func clamp(_ d: TimeInterval?) -> TimeInterval? {
+        guard let d else { return nil }
+        guard d.isFinite else { return maxDuration }
+        return min(max(d, 1), maxDuration)
+    }
+
+    /// `interactive` is false for wink:// commands: those never raise a password prompt.
+    func start(duration rawDuration: TimeInterval?, interactive: Bool = true) {
+        let duration = Self.clamp(rawDuration)
         if live, prefs.lidClosed, !power.lidHelperInstalled {
-            setUpLidClosed()
+            if interactive { setUpLidClosed() }
+            else { notice = "Open Wink and press Keep awake once to set up lid-closed mode. Until then it only works with the lid open." }
         }
         now = Date()
         total = duration
@@ -133,7 +140,9 @@ final class Session: ObservableObject {
     }
 
     func extend(by t: TimeInterval) {
-        guard mode != .off, let current = total else { return }
+        guard mode != .off, let current = total, t.isFinite, t > 0 else { return }
+        let t = min(t, Self.maxDuration - current)
+        guard t > 0 else { return }
         total = current + t
         if mode == .running { endAt = endAt?.addingTimeInterval(t) }
         if mode == .paused { pausedRemaining = (pausedRemaining ?? 0) + t }
@@ -195,12 +204,35 @@ final class Session: ObservableObject {
 
     // MARK: - Ticking
 
+    /// Set by the menu bar controller. The clock only ticks every second while
+    /// something is on screen that needs it; otherwise every 30 seconds.
+    var popoverVisible = false { didSet { if popoverVisible != oldValue { retime() } } }
+    private var currentInterval: TimeInterval = 0
+    private var lastGuardCheck = Date.distantPast
+    private var lastStopsRefresh = Date()
+
+    private func retime() {
+        guard live else { return }
+        let interval: TimeInterval = (mode != .off || popoverVisible) ? 1 : 30
+        guard interval != currentInterval else { return }
+        currentInterval = interval
+        timer?.invalidate()
+        let t = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.tick() }
+        }
+        t.tolerance = interval * 0.15
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+        tick()
+    }
+
     private func tick() {
-        now = Date()
+        let n = Date()
         ticks += 1
-        if mode == .running, let e = endAt, e <= now { stop(.finished) }
-        if ticks % 10 == 0 { checkGuards(); refreshExternal() }
-        if ticks % 60 == 0, mode == .off { refreshStops() }
+        if mode == .running, let e = endAt, e <= n { now = n; stop(.finished) }
+        if n.timeIntervalSince(lastGuardCheck) >= 10 { lastGuardCheck = n; checkGuards(); refreshExternal() }
+        if mode == .off, n.timeIntervalSince(lastStopsRefresh) >= 60 { lastStopsRefresh = n; refreshStops() }
+        if mode != .off || popoverVisible { now = n }
         onChange?()
     }
 
@@ -220,15 +252,15 @@ final class Session: ObservableObject {
             if !power.holdLidClosed() && power.lidHelperInstalled {
                 notice = "Couldn't switch lid-closed sleep off. Try turning the lid switch off and on."
             }
-        } else {
-            power.releaseLidClosed()
+        } else if !power.releaseLidClosed() {
+            notice = "Wink couldn't switch normal sleep back on by itself. Use the button above to do it with your password."
         }
         refreshExternal()
         onChange?()
     }
 
     func refreshExternal() {
-        let value = live && power.systemSleepDisabled && !power.ownsSleepDisabled
+        let value = live && mode == .off && power.systemSleepDisabled
         if value != externalSleepDisabled { externalSleepDisabled = value }
     }
 
@@ -236,6 +268,7 @@ final class Session: ObservableObject {
 
     private func persist() {
         guard live else { return }
+        retime()
         let d = UserDefaults.standard
         d.set(mode.rawValue, forKey: "session.mode")
         d.set(total, forKey: "session.total")

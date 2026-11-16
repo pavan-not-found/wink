@@ -2,7 +2,8 @@
 
 - `POSTS.md`: copy for X, LinkedIn, Hacker News, Reddit, Product Hunt and a note for friends.
 - `LAUNCH-PLAN.md`: the order to do things in, and replies to common questions.
-- `wink-launch-1080p.mp4`: the 25-second film (1920×1080, with sound).
+- `wink-launch-1080p.mp4`: the 25-second film (1920×1080, with sound). Use it on X, the site and Product Hunt.
+- `wink-launch-vertical-1080x1920.mp4`: the same film recomposed for phones. Use it on LinkedIn, Instagram Reels and YouTube Shorts.
 - `images/`: stills for posts. `og.png` is the 1280×640 social preview.
 
 ## Re-rendering

@@ -23,8 +23,11 @@ enum Fmt {
     }
 
     /// Big countdown: ("1:58", ":12") or ("3d 4h", nil)
+    /// Keeps Int conversions safe whatever comes in.
+    private static func safe(_ t: TimeInterval) -> TimeInterval { t.isFinite ? min(max(0, t), 1e9) : 0 }
+
     static func countdown(_ t: TimeInterval) -> (main: String, seconds: String?) {
-        let s = max(0, Int(t.rounded(.down)))
+        let s = Int(safe(t).rounded(.down))
         let h = s / 3600, m = (s % 3600) / 60, sec = s % 60
         if h >= 48 { return ("\(h / 24)d \(h % 24)h", nil) }
         return ("\(h):\(String(format: "%02d", m))", String(format: ":%02d", sec))
@@ -32,8 +35,9 @@ enum Fmt {
 
     /// Compact form for the menu bar: "1:58", "42m", "3d"
     static func short(_ t: TimeInterval) -> String {
-        if t < 60 { return "\(max(0, Int(t.rounded(.up))))s" }
-        let m = max(0, Int((t / 60).rounded(.down))), h = m / 60
+        let t = safe(t)
+        if t < 60 { return "\(Int(t.rounded(.up)))s" }
+        let m = Int((t / 60).rounded(.down)), h = m / 60
         if h >= 48 { return "\(h / 24)d" }
         if h > 0 { return "\(h):\(String(format: "%02d", m % 60))" }
         return "\(m)m"
@@ -41,7 +45,7 @@ enum Fmt {
 
     /// "3h 12m", "45m"
     static func words(_ t: TimeInterval) -> String {
-        let m = max(0, Int((t / 60).rounded(.down))), h = m / 60
+        let m = Int((safe(t) / 60).rounded(.down)), h = m / 60
         if h >= 24 { return "\(h / 24)d \(h % 24)h" }
         if h > 0 { return "\(h)h \(m % 60)m" }
         return "\(m)m"

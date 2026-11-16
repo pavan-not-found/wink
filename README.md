@@ -62,7 +62,7 @@ you ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0, /usr/bin/pmset -a dis
 
 It lets Wink run those two exact commands without asking again, and nothing else. You can remove it any time from Settings, or with `sudo rm /etc/sudoers.d/wink`.
 
-Wink switches sleep back on when the timer ends, when you pause or stop, and when you quit. If Wink crashes or is force-quit, a small watcher process notices within two seconds and switches sleep back on. If something else turned off sleep before Wink started, Wink leaves it alone.
+Wink switches sleep back on when the timer ends, when you pause or stop, and when you quit. If Wink crashes or is force-quit, a small watcher process notices within two seconds and switches sleep back on. For the rare hard shutdown, Wink also adds a tiny login check (macOS will mention a new background item) that does the same the next time you log in. If something else turned off sleep before Wink started, Wink leaves it alone.
 
 ## Use it from the terminal, Shortcuts or agent hooks
 
@@ -119,6 +119,7 @@ Quit Wink from its Settings, then:
 ```sh
 rm -rf /Applications/Wink.app
 sudo rm -f /etc/sudoers.d/wink
+rm -f ~/Library/LaunchAgents/app.wink.mac.restore-sleep.plist
 defaults delete app.wink.mac
 ```
 

@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private var statusItem: NSStatusItem!
     private let popover = NSPopover()
     private var session: Session!
@@ -30,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentViewController = host
         popover.behavior = .transient
         popover.animates = true
+        popover.delegate = self
 
         session.onChange = { [weak self] in self?.refreshStatusItem() }
         refreshStatusItem()
@@ -50,6 +51,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                      forEventClass: AEEventClass(kInternetEventClass),
                                                      andEventID: AEEventID(kAEGetURL))
     }
+
+    func popoverWillShow(_ notification: Notification) { session.popoverVisible = true }
+    func popoverDidClose(_ notification: Notification) { session.popoverVisible = false }
 
     func applicationWillTerminate(_ notification: Notification) {
         session?.prepareForQuit()
@@ -118,8 +122,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: s) else { return }
         if url.host == "debug-snapshot", UserDefaults.standard.bool(forKey: "debugSnapshots") {
-            let dir = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "dir" }?.value
-            snapshot(to: URL(fileURLWithPath: dir ?? NSTemporaryDirectory()))
+            // Always inside a fixed temp folder; the name is reduced to safe characters.
+            let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "name" }?.value ?? "latest"
+            let name = String(raw.filter { $0.isLetter || $0.isNumber || $0 == "-" }.prefix(40))
+            snapshot(to: URL(fileURLWithPath: "/tmp/wink-snapshots").appendingPathComponent(name.isEmpty ? "latest" : name))
             return
         }
         URLCommands.handle(url, session: session, show: { [weak self] in self?.showPopover() })

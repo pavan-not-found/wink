@@ -1,7 +1,7 @@
 # Launch posts
 
 Everything below is ready to paste. Attach the file named next to each post.
-Files: `launch/wink-launch-1080p.mp4` (the 25 s film), `launch/images/*.png`.
+Files: `launch/wink-launch-1080p.mp4` (the 25 s film), `launch/wink-launch-vertical-1080x1920.mp4` (the same film for phones), `launch/images/*.png`.
 
 ---
 
@@ -55,7 +55,7 @@ Attach: `wink-launch-1080p.mp4`
 
 ## LinkedIn
 
-Attach: the film
+Attach: `wink-launch-vertical-1080x1920.mp4` (it fills the phone screen in the feed)
 
 > I kept walking between rooms with my MacBook half open, because closing the lid would stop a voice recording or a long task I had running.
 >

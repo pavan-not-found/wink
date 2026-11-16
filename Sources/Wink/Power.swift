@@ -72,7 +72,16 @@ final class Power {
     /// Turns lid-closed sleep off. Returns false if Wink can't (helper missing or sudo refused).
     @discardableResult
     func holdLidClosed() -> Bool {
-        if dryRun || ownsSleepDisabled { return true }
+        if dryRun { return true }
+        if ownsSleepDisabled {
+            // Ours already, e.g. relaunched mid-session. If something switched it back on
+            // in the meantime (the crash watcher, or someone running pmset), switch it off again.
+            if !systemSleepDisabled {
+                guard lidHelperInstalled, pmset(disable: true) else { ownsSleepDisabled = false; return false }
+            }
+            if watcher?.isRunning != true { startWatcher() }
+            return true
+        }
         if systemSleepDisabled { return true }          // already off, and not ours: leave it alone
         guard lidHelperInstalled, pmset(disable: true) else { return false }
         ownsSleepDisabled = true
@@ -81,7 +90,8 @@ final class Power {
     }
 
     /// A tiny shell loop that outlives Wink. If Wink dies without cleaning up
-    /// (force quit, crash), it switches lid-closed sleep back on within seconds.
+    /// (force quit, crash), it switches lid-closed sleep back on within seconds
+    /// and clears Wink's ownership flag.
     private var watcher: Process?
 
     private func startWatcher() {
@@ -89,7 +99,7 @@ final class Power {
         let pid = ProcessInfo.processInfo.processIdentifier
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/bin/sh")
-        p.arguments = ["-c", "while /bin/kill -0 \(pid) 2>/dev/null; do /bin/sleep 2; done; /usr/bin/sudo -n /usr/bin/pmset -a disablesleep 0"]
+        p.arguments = ["-c", "while /bin/kill -0 \(pid) 2>/dev/null; do /bin/sleep 2; done; " + Self.restoreScript]
         p.standardOutput = FileHandle.nullDevice
         p.standardError = FileHandle.nullDevice
         try? p.run()
@@ -101,13 +111,27 @@ final class Power {
         watcher = nil
     }
 
+    static var defaultsDomain: String { Bundle.main.bundleIdentifier ?? "app.wink.mac" }
+
+    /// Shell that switches sleep back on if Wink still owns it. Shared by the crash
+    /// watcher and the login agent that covers hard shutdowns.
+    static var restoreScript: String {
+        let d = defaultsDomain
+        return "if [ \"$(/usr/bin/defaults read \(d) ownsSleepDisabled 2>/dev/null)\" = 1 ]; then " +
+            "/usr/bin/sudo -n /usr/bin/pmset -a disablesleep 0 && /usr/bin/defaults write \(d) ownsSleepDisabled -bool false; fi"
+    }
+
     /// Turns lid-closed sleep back on, but only if Wink was the one that turned it off.
-    func releaseLidClosed() {
-        if dryRun || !ownsSleepDisabled { return }
-        stopWatcher()
+    /// Returns false if it couldn't; the watcher then stays in place as a backstop.
+    @discardableResult
+    func releaseLidClosed() -> Bool {
+        if dryRun || !ownsSleepDisabled { return true }
         if pmset(disable: false) || !systemSleepDisabled {
             ownsSleepDisabled = false
+            stopWatcher()
+            return true
         }
+        return false
     }
 
     /// Called at launch. If Wink died while holding the lid, put things back.
@@ -118,9 +142,11 @@ final class Power {
     /// For Macs where something else (usually a `sudo pmset disablesleep 1` someone
     /// forgot about) has switched sleep off. Turns it back on so Wink can manage it.
     func restoreNormalSleep() -> Result<Void, PowerError> {
-        if lidHelperInstalled, pmset(disable: false) { return .success(()) }
-        return admin("/usr/bin/pmset -a disablesleep 0",
-                     prompt: "Wink needs your password to turn normal sleep back on.")
+        if lidHelperInstalled, pmset(disable: false) { ownsSleepDisabled = false; stopWatcher(); return .success(()) }
+        let r = admin("/usr/bin/pmset -a disablesleep 0",
+                      prompt: "Wink needs your password to turn normal sleep back on.")
+        if case .success = r { ownsSleepDisabled = false; stopWatcher() }
+        return r
     }
 
     // MARK: - Helper install
@@ -130,25 +156,52 @@ final class Power {
         guard user.range(of: #"^[A-Za-z0-9._-]+$"#, options: .regularExpression) != nil else {
             return .failure(.message("Wink couldn't read your account name."))
         }
-        let rule = """
-        # Added by Wink (https://github.com/pavan-parallel/wink) so it can keep your Mac
-        # awake with the lid closed. It allows exactly these two commands, nothing else.
-        # To remove it: sudo rm /etc/sudoers.d/wink
-        \(user) ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0, /usr/bin/pmset -a disablesleep 1
+        let lines = [
+            "# Added by Wink (https://github.com/pavan-parallel/wink) so it can keep your Mac",
+            "# awake with the lid closed. It allows exactly these two commands, nothing else.",
+            "# To remove it: sudo rm /etc/sudoers.d/wink",
+            "\(user) ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0, /usr/bin/pmset -a disablesleep 1",
+        ]
+        // Written, checked and moved entirely as root inside /etc/sudoers.d, so nothing
+        // the user can write is read back after visudo validates it. sudo ignores
+        // files whose names start with a dot, so the temp file is never live.
+        let tmp = "/etc/sudoers.d/.wink.new"
+        let printf = "/usr/bin/printf '%s\\n' " + lines.map { "'\($0)'" }.joined(separator: " ")
+        let cmd = "umask 077; \(printf) > \(tmp) && /usr/sbin/visudo -cf \(tmp) && " +
+            "/usr/sbin/chown root:wheel \(tmp) && /bin/chmod 0440 \(tmp) && /bin/mv -f \(tmp) \(Self.sudoersPath) " +
+            "|| { /bin/rm -f \(tmp); exit 1; }"
+        let r = admin(cmd, prompt: "Wink needs your password once so it can keep your Mac awake with the lid closed.")
+        if case .success = r { installLoginAgent() }
+        return r
+    }
 
-        """
-        let tmp = (NSTemporaryDirectory() as NSString).appendingPathComponent("wink-sudoers-\(UUID().uuidString)")
-        do { try rule.write(toFile: tmp, atomically: true, encoding: .utf8) }
-        catch { return .failure(.message("Wink couldn't write a temporary file.")) }
-        defer { try? FileManager.default.removeItem(atPath: tmp) }
+    /// A login agent that runs the restore script once at login. It covers the one case the
+    /// watcher can't: a hard shutdown or kernel panic while Wink held lid-closed sleep off.
+    static var agentURL: URL {
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/LaunchAgents/\(defaultsDomain).restore-sleep.plist")
+    }
 
-        let cmd = "/usr/sbin/visudo -cf '\(tmp)' && /usr/bin/install -m 0440 -o root -g wheel '\(tmp)' \(Self.sudoersPath)"
-        return admin(cmd, prompt: "Wink needs your password once so it can keep your Mac awake with the lid closed.")
+    private func installLoginAgent() {
+        let plist: [String: Any] = [
+            "Label": "\(Self.defaultsDomain).restore-sleep",
+            "ProgramArguments": ["/bin/sh", "-c", Self.restoreScript],
+            "RunAtLoad": true,
+        ]
+        try? FileManager.default.createDirectory(at: Self.agentURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        (plist as NSDictionary).write(to: Self.agentURL, atomically: true)
     }
 
     func uninstallLidHelper() -> Result<Void, PowerError> {
-        releaseLidClosed()
-        return admin("/bin/rm -f \(Self.sudoersPath)", prompt: "Wink needs your password to remove its lid-closed permission.")
+        // Put sleep back first. If sudo can't, do it as part of the same admin step.
+        let restored = releaseLidClosed()
+        let restore = restored ? "" : "/usr/bin/pmset -a disablesleep 0; "
+        let r = admin(restore + "/bin/rm -f \(Self.sudoersPath)", prompt: "Wink needs your password to remove its lid-closed permission.")
+        if case .success = r {
+            if !restored { ownsSleepDisabled = false; stopWatcher() }
+            try? FileManager.default.removeItem(at: Self.agentURL)
+        }
+        return r
     }
 
     // MARK: - Plumbing
