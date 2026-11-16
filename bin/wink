@@ -1,0 +1,21 @@
+#!/bin/sh
+# wink: control Wink from the terminal, scripts, or agent hooks.
+#
+#   wink start            keep awake for the last duration you picked
+#   wink start 2h         2h, 90m, 1d, 1w, 2h30m, forever
+#   wink until 08:00      keep awake until a time
+#   wink stop | pause | resume | toggle
+#   wink extend 1h
+#   wink open             show the popover
+set -e
+cmd="${1:-toggle}"
+arg="${2:-}"
+case "$cmd" in
+  start|on)    if [ -n "$arg" ]; then open -g "wink://start?for=$arg"; else open -g "wink://start"; fi ;;
+  until)       open -g "wink://start?until=$arg" ;;
+  extend)      open -g "wink://extend?by=${arg:-1h}" ;;
+  stop|off|pause|resume|toggle) open -g "wink://$cmd" ;;
+  open|show)   open "wink://open" ;;
+  -h|--help|help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *) echo "wink: unknown command '$cmd' (try: wink help)" >&2; exit 1 ;;
+esac

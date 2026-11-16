@@ -1,0 +1,30 @@
+name: Release
+
+# Push a tag like v1.0.1 and this builds Wink and attaches the zip and dmg to a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build
+        run: scripts/build.sh
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(cat VERSION)"
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/SHA256SUMS.txt \
+            --title "Wink $VERSION" --generate-notes || \
+          gh release upload "$GITHUB_REF_NAME" "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/SHA256SUMS.txt --clobber
