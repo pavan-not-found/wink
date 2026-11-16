@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/pavan-parallel/wink/releases/latest"><b>Download for macOS</b></a>
+  <a href="https://github.com/pavan-parallel/wink/releases/latest/download/Wink.dmg"><b>Download for macOS</b></a>
   &nbsp;·&nbsp; macOS 14 or later &nbsp;·&nbsp; Apple silicon and Intel &nbsp;·&nbsp; Free and open source
 </p>
 
@@ -24,6 +24,8 @@ You start a long download, a render, a voice recording or a coding agent. Then y
 
 Wink does it from the menu bar. Drag the ruler to choose how long, press Keep awake, and close the lid. When the time runs out, your Mac goes back to sleeping normally.
 
+<p align="center"><img src="docs/assets/demo.gif" width="760" alt="Choosing 'till morning' on Wink's ruler and pressing Keep awake"></p>
+
 ## Install
 
 Paste this into Terminal:
@@ -36,10 +38,12 @@ Or download the DMG from [Releases](https://github.com/pavan-parallel/wink/relea
 
 ## What it does
 
-<img src="docs/assets/states.png" width="860" alt="Wink's popover while setting a time, running, and paused">
+<img src="docs/assets/states-clean.png" width="860" alt="Wink's popover while setting a time, running, and paused">
 
 - **One ruler for every duration.** Fifteen minutes to a week, plus forever. There's always a stop for 8 am, so leaving it on overnight is one drag.
 - **It tells you when it ends.** "Until 11:40 pm" instead of "2 hours".
+<img src="docs/assets/icon-states-clean.png" width="860" alt="The menu bar icon at off, just started, halfway, almost done and paused">
+
 - **The icon is the timer.** An eye under a lid. While Wink runs, the eye is amber and the lid slowly comes down as the time runs out. When it's shut, your Mac sleeps normally.
 - **Pause, resume, or add an hour** without starting over.
 - **It lets go on its own.** It stops early if your battery drops below 15% (you pick the number) or your Mac gets critically hot.

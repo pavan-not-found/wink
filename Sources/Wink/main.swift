@@ -8,6 +8,11 @@ if let i = args.firstIndex(of: "--render"), i + 1 < args.count {
     MainActor.assumeIsolated { Renderer.run(dir: URL(fileURLWithPath: args[i + 1])) }
     exit(0)
 }
+if let i = args.firstIndex(of: "--render-video"), i + 1 < args.count {
+    _ = NSApplication.shared
+    MainActor.assumeIsolated { Renderer.runVideo(dir: URL(fileURLWithPath: args[i + 1])) }
+    exit(0)
+}
 if let i = args.firstIndex(of: "--iconset"), i + 1 < args.count {
     do { try AppIconArt.writeIconset(to: URL(fileURLWithPath: args[i + 1])); exit(0) }
     catch { print(error); exit(1) }

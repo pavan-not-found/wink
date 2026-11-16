@@ -10,9 +10,7 @@ set -euo pipefail
 
 REPO="${WINK_REPO:-pavan-parallel/wink}"
 echo "Finding the latest Wink release…"
-URL="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
-  | grep -o '"browser_download_url": *"[^"]*\.zip"' | head -1 | cut -d'"' -f4)"
-[ -n "$URL" ] || { echo "Couldn't find a release zip for $REPO." >&2; exit 1; }
+URL="${WINK_ZIP_URL:-https://github.com/$REPO/releases/latest/download/Wink.zip}"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
@@ -33,8 +31,7 @@ xattr -dr com.apple.quarantine /Applications/Wink.app 2>/dev/null || true
 # The command-line helper, if there's somewhere sensible to put it.
 for dir in /opt/homebrew/bin /usr/local/bin; do
   if [ -w "$dir" ]; then
-    curl -fsSL "https://raw.githubusercontent.com/$REPO/main/bin/wink" -o "$dir/wink" && chmod +x "$dir/wink" \
-      && echo "Installed the 'wink' command to $dir"
+    ln -sf /Applications/Wink.app/Contents/Resources/wink "$dir/wink" && echo "Added the 'wink' command to $dir"
     break
   fi
 done

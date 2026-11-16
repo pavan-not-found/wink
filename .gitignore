@@ -6,3 +6,8 @@ dist/
 .swiftpm/
 launch/video/node_modules/
 launch/video/renders/
+docs/assets/raw/
+launch/*/.hyperframes/
+launch/*/renders/
+launch/*/node_modules/
+launch/*/assets/fonts/

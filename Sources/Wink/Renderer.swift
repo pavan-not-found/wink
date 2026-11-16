@@ -74,6 +74,36 @@ enum Renderer {
         print("Rendered to \(dir.path)")
     }
 
+    /// Frames for the launch film: the ruler at each stop, then running till morning.
+    static func runVideo(dir: URL) {
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let prefs = Prefs(defaults: UserDefaults(suiteName: "wink.render.\(UUID().uuidString)")!)
+        let probe = Session(prefs: prefs, power: Power(dryRun: true), live: false)
+        for stop in probe.stops {
+            let s = Session(prefs: prefs, power: Power(dryRun: true), live: false)
+            s.demo(mode: .off, total: nil, remaining: nil, selectedID: stop.id)
+            let safe = stop.id == "∞" ? "forever" : stop.id
+            write(frame(s, prefs), to: dir.appendingPathComponent("setup-\(safe).png"))
+        }
+        let morning = Stops.nextMorning().timeIntervalSinceNow
+        for (name, left) in [("running-start", morning), ("running-later", morning * 0.42)] {
+            let s = Session(prefs: prefs, power: Power(dryRun: true), live: false)
+            s.demo(mode: .running, total: morning, remaining: left, elapsed: morning - left)
+            write(frame(s, prefs), to: dir.appendingPathComponent("\(name).png"))
+        }
+        print("Video frames in \(dir.path) (morning = \(Int(morning))s)")
+    }
+
+    private static func frame(_ s: Session, _ prefs: Prefs) -> some View {
+        PopoverView()
+            .environmentObject(s)
+            .environmentObject(prefs)
+            .background(RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(red: 0.145, green: 0.137, blue: 0.165))
+                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Color.white.opacity(0.1))))
+            .environment(\.colorScheme, .dark)
+    }
+
     private static func chrome(_ scheme: ColorScheme) -> some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(scheme == .dark ? Color(red: 0.145, green: 0.137, blue: 0.165) : Color(red: 0.965, green: 0.957, blue: 0.972))

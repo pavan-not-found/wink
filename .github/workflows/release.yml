@@ -25,6 +25,6 @@ jobs:
         run: |
           VERSION="$(cat VERSION)"
           gh release create "$GITHUB_REF_NAME" \
-            "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/SHA256SUMS.txt \
+            "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/Wink.zip dist/Wink.dmg dist/SHA256SUMS.txt \
             --title "Wink $VERSION" --generate-notes || \
-          gh release upload "$GITHUB_REF_NAME" "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/SHA256SUMS.txt --clobber
+          gh release upload "$GITHUB_REF_NAME" "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/Wink.zip dist/Wink.dmg dist/SHA256SUMS.txt --clobber

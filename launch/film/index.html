@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "SF Pro Display"; src: url("assets/fonts/SF-Pro-Display-Regular.otf"); font-weight: 400; }
+      @font-face { font-family: "SF Pro Display"; src: url("assets/fonts/SF-Pro-Display-Medium.otf"); font-weight: 500; }
+      @font-face { font-family: "SF Pro Display"; src: url("assets/fonts/SF-Pro-Display-Semibold.otf"); font-weight: 600; }
+      @font-face { font-family: "SF Pro Display"; src: url("assets/fonts/SF-Pro-Display-Bold.otf"); font-weight: 700; }
+      :root {
+        --ground: #0d0c11;
+        --ink: #f5f3ef;
+        --ink2: #a19ca8;
+        --amber: #ffb340;
+        --green: #34c759;
+        --red: #ff5f57;
+        --font: "SF Pro Display", sans-serif;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; font-family: var(--font); color: var(--ink); overflow: hidden; }
+      #bg { position: absolute; inset: 0; background: radial-gradient(70% 60% at 50% 105%, #2a2338 0%, #15131c 55%, #0d0c11 100%); }
+
+      .title { position: absolute; left: 0; right: 0; top: 112px; text-align: center; font-size: 66px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; }
+      .title.left { left: 140px; right: auto; top: 380px; width: 820px; text-align: left; }
+      .w { display: inline-block; }
+      .amber { color: var(--amber); }
+
+      #macWrap { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      #mac { position: absolute; left: 520px; top: 268px; width: 880px; height: 600px; }
+      #lid { position: absolute; left: 0; top: 0; width: 880px; height: 556px; transform-origin: 50% 100%; }
+      .face { position: absolute; inset: 0; border-radius: 26px 26px 6px 6px; }
+      #lidFront { background: #19181d; padding: 15px 15px 22px; box-shadow: 0 0 0 1.5px #3a3940 inset; }
+      #lidBack { background: linear-gradient(180deg, #d9d7df, #a9a6b1); opacity: 0; }
+      #screen { position: relative; width: 100%; height: 100%; border-radius: 12px 12px 3px 3px; overflow: hidden;
+        background: radial-gradient(90% 90% at 20% 100%, #3b6a8f 0%, #22324f 45%, #121427 100%); }
+      #screenDim { position: absolute; inset: 0; background: #000; opacity: 0; }
+      .mbar { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: flex-end; color: #fff; background: rgba(10,10,20,0.28); }
+      #mini { height: 22px; gap: 11px; padding: 0 12px; font-size: 11px; font-weight: 500; }
+      #mini .left { margin-right: auto; display: flex; gap: 12px; }
+      #base { position: absolute; left: -60px; top: 556px; width: 1000px; height: 24px; border-radius: 3px 3px 22px 22px;
+        background: linear-gradient(180deg, #d6d4dc 0%, #a6a3ae 60%, #77747f 100%); }
+      #notch { position: absolute; left: 50%; top: 0; width: 150px; height: 9px; margin-left: -75px; border-radius: 0 0 9px 9px; background: #8d8a95; }
+      #shadow { position: absolute; left: -40px; top: 574px; width: 960px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,0.55), transparent); }
+
+      #job { position: absolute; left: 196px; top: 168px; width: 460px; padding: 22px 24px; border-radius: 14px;
+        background: rgba(30,28,38,0.86); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
+      #job .name { font-size: 18px; font-weight: 600; }
+      #job .sub { font-size: 14px; color: var(--ink2); margin-top: 4px; }
+      #jobBar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-top: 18px; overflow: hidden; }
+      #jobFill { height: 100%; width: 34%; border-radius: 4px; background: #5aa8ff; }
+
+      .status { position: absolute; left: 0; right: 0; top: 900px; display: flex; justify-content: center; }
+      .status .card { display: flex; align-items: center; gap: 18px; padding: 18px 30px; border-radius: 18px;
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 40px; font-weight: 500; }
+      .dot { width: 14px; height: 14px; border-radius: 50%; }
+
+      #desk { position: absolute; inset: 0; opacity: 0; background: radial-gradient(90% 90% at 20% 100%, #3b6a8f 0%, #22324f 45%, #121427 100%); }
+      #bigbar { height: 52px; font-size: 25px; font-weight: 500; }
+      #bigbar .left { position: absolute; left: 36px; top: 0; height: 52px; display: flex; align-items: center; gap: 30px; }
+      .mbi { position: absolute; top: 0; height: 52px; display: flex; align-items: center; }
+      #pop { position: absolute; left: 1110px; top: 66px; width: 570px; height: 540px; }
+      #pop img { position: absolute; left: 0; top: 0; width: 570px; opacity: 0; filter: drop-shadow(0 30px 50px rgba(0,0,0,0.5)); }
+      #cursor { position: absolute; left: 0; top: 0; width: 46px; height: 64px; }
+
+      #end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #wordmark { font-size: 120px; font-weight: 700; letter-spacing: -0.04em; margin-top: 34px; }
+      #endLine { font-size: 36px; color: var(--ink2); margin-top: 18px; font-weight: 500; }
+      #endUrl { font-size: 32px; color: var(--ink); margin-top: 30px; font-weight: 500; padding: 14px 26px; border-radius: 14px; background: rgba(255,255,255,0.07); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="25" data-width="1920" data-height="1080">
+      <div id="bg"></div>
+      <audio id="score" class="clip" src="assets/audio/score.wav" data-start="0" data-duration="25" data-track-index="6" data-volume="1"></audio>
+
+      <div id="macWorld" class="clip" data-start="0" data-duration="21.1" data-track-index="1" data-layout-allow-overflow>
+        <div id="macWrap">
+          <div id="mac">
+            <div id="shadow"></div>
+            <div id="base"><div id="notch"></div></div>
+            <div id="lid">
+              <div id="lidFront" class="face">
+                <div id="screen" data-layout-ignore>
+                  <div id="mini" class="mbar">
+                    <div class="left"><b></b><b>Finder</b><span>File</span><span>Edit</span><span>View</span></div>
+                    <svg id="miniEye" width="20" height="18" viewBox="0 0 24 24"></svg>
+                    <span id="miniTime" style="margin-left:-6px;color:var(--amber);font-variant-numeric:tabular-nums;opacity:0">9:31</span>
+                    <svg width="22" height="11" viewBox="0 0 26 12"><rect x=".6" y=".6" width="22" height="10.8" rx="3.2" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="2.2" y="2.2" width="14" height="7.6" rx="1.8" fill="#fff"/></svg>
+                    <span>10:28 PM</span>
+                  </div>
+                  <div id="job">
+                    <div class="name">Uploading launch-film-final.mov</div>
+                    <div class="sub" id="jobSub">34% · 6.8 GB of 20 GB</div>
+                    <div id="jobBar"><div id="jobFill"></div></div>
+                  </div>
+                  <div id="screenDim"></div>
+                </div>
+              </div>
+              <div id="lidBack" class="face"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="s1" class="status clip" data-start="3.7" data-duration="2.6" data-track-index="3">
+        <div class="card" id="s1card"><span class="dot" style="background:var(--red)"></span><span>Upload stopped at 41%</span></div>
+      </div>
+      <div id="s2" class="status clip" data-start="14.9" data-duration="5.9" data-track-index="3">
+        <div class="card" id="s2card">
+          <svg id="chipEye" width="50" height="46" viewBox="0 0 24 24"></svg>
+          <span id="chipTime" style="color:var(--amber);font-variant-numeric:tabular-nums;width:132px">9:31</span>
+          <span style="color:var(--ink2)">·</span>
+          <span id="chipJob" style="font-variant-numeric:tabular-nums">Upload 41%</span>
+        </div>
+      </div>
+
+      <div id="deskWorld" class="clip" data-start="7.1" data-duration="6.3" data-track-index="2" data-layout-allow-overflow>
+        <div id="desk">
+          <div id="bigbar" class="mbar">
+            <div class="left"><b style="font-weight:700"></b><b style="font-weight:700">Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span></div>
+            <div class="mbi" style="left:1370px;gap:8px"><svg id="bigEye" width="50" height="46" viewBox="0 0 24 24"></svg><span id="bigTime" style="color:var(--amber);font-variant-numeric:tabular-nums;opacity:0">9:31</span></div>
+            <div class="mbi" style="left:1530px"><svg width="50" height="24" viewBox="0 0 26 12"><rect x=".6" y=".6" width="22" height="10.8" rx="3.2" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.1"/><rect x="2.2" y="2.2" width="14" height="7.6" rx="1.8" fill="#fff"/><path d="M24 4v4a2 2 0 0 0 0-4z" fill="#fff" fill-opacity=".5"/></svg></div>
+            <div class="mbi" style="left:1610px"><span>Mon 16 Nov 10:28 PM</span></div>
+          </div>
+          <div id="pop">
+            <img id="p2h" src="assets/app/setup-2h.png" alt="" />
+            <img id="p3h" src="assets/app/setup-3h.png" alt="" />
+            <img id="p4h" src="assets/app/setup-4h.png" alt="" />
+            <img id="p6h" src="assets/app/setup-6h.png" alt="" />
+            <img id="p8h" src="assets/app/setup-8h.png" alt="" />
+            <img id="pAm" src="assets/app/setup-morning.png" alt="" />
+            <img id="pRun" src="assets/app/running-start.png" alt="" />
+          </div>
+          <svg id="cursor" viewBox="0 0 23 32"><path d="M2 1.5v25.3l6.3-6.1 4.1 9.6 4.4-1.9-4.1-9.4h8.7z" fill="#000" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <h1 id="t1" class="title clip" data-start="0.05" data-duration="3.0" data-track-index="4"><span class="w">Your</span> <span class="w">Mac</span> <span class="w">is</span> <span class="w">halfway</span> <span class="w">through</span> <span class="w">something.</span></h1>
+      <h1 id="t2" class="title clip" data-start="3.8" data-duration="2.95" data-track-index="4"><span class="w">Close</span> <span class="w">the</span> <span class="w">lid</span> <span class="w">and</span> <span class="w">it</span> <span class="w">all</span> <span class="w">stops.</span></h1>
+      <h1 id="t3" class="title left clip" data-start="7.6" data-duration="2.0" data-track-index="4"><span class="w amber">Wink</span> <span class="w">keeps</span> <span class="w">it</span> <span class="w">awake.</span></h1>
+      <h1 id="t4" class="title left clip" data-start="9.7" data-duration="3.3" data-track-index="4"><span class="w">Pick</span> <span class="w">how</span> <span class="w">long.</span> <span class="w">Morning</span> <span class="w">is</span> <span class="w">one</span> <span class="w">drag</span> <span class="w">away.</span></h1>
+      <h1 id="t5" class="title clip" data-start="15.0" data-duration="2.9" data-track-index="4"><span class="w">Close</span> <span class="w">the</span> <span class="w">lid.</span> <span class="w">It</span> <span class="w">keeps</span> <span class="w">going.</span></h1>
+      <h1 id="t6" class="title clip" data-start="18.0" data-duration="3.2" data-track-index="4"><span class="w">At</span> <span class="w">8</span> <span class="w">am,</span> <span class="w">your</span> <span class="w">Mac</span> <span class="w">sleeps</span> <span class="w">normally</span> <span class="w">again.</span></h1>
+
+      <div id="endWorld" class="clip" data-start="20.9" data-duration="4.1" data-track-index="2">
+        <div id="end">
+          <svg id="icon" width="260" height="260" viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="ibg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2930"/><stop offset="1" stop-color="#0c0c0f"/></linearGradient>
+              <radialGradient id="iglow" cx=".5" cy=".53" r=".42"><stop offset="0" stop-color="#ffb340" stop-opacity=".32"/><stop offset="1" stop-color="#ffb340" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect x="10" y="10" width="180" height="180" rx="41" fill="url(#ibg)"/>
+            <rect id="iconGlow" x="10" y="10" width="180" height="180" rx="41" fill="url(#iglow)" opacity="0"/>
+            <rect x="10.5" y="10.5" width="179" height="179" rx="40.5" fill="none" stroke="#fff" stroke-opacity=".1"/>
+            <g id="iconEye" transform="translate(40 40) scale(5)"></g>
+          </svg>
+          <div id="wordmark">Wink</div>
+          <div id="endLine">Free and open source, for macOS</div>
+          <div id="endUrl">github.com/pavan-parallel/wink</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // The Wink eye, same geometry as the app (24-unit grid).
+      const E = { cx: 12, cy: 11.4, R: 8.6, w: 2.5, pupil: 4.9, gap: 1.35 };
+      E.lidTop = E.cy - E.pupil - E.gap - E.w / 2;
+      function eyeMarkup(key, open, lid, pupil) {
+        const o = Math.max(0, Math.min(1, open));
+        const yl = E.lidTop + (1 - o) * (E.cy - E.lidTop);
+        const top = yl + E.w / 2 + E.gap, inner = E.R - E.w / 2 - E.gap, id = "ec-" + key;
+        let s = `<path d="M${E.cx - E.R} ${E.cy} A${E.R} ${E.R} 0 0 0 ${E.cx + E.R} ${E.cy}" fill="none" stroke="${lid}" stroke-width="${E.w}" stroke-linecap="round"/>`;
+        s += `<path d="M${E.cx - E.R} ${yl.toFixed(3)} H${E.cx + E.R}" stroke="${lid}" stroke-width="${E.w}" stroke-linecap="round"/>`;
+        if (pupil && o > 0.002) {
+          s += `<clipPath id="${id}a"><rect x="0" y="${top.toFixed(3)}" width="24" height="${(24 - top).toFixed(3)}"/></clipPath>`;
+          s += `<clipPath id="${id}b"><circle cx="${E.cx}" cy="${E.cy}" r="${inner}"/></clipPath>`;
+          s += `<g clip-path="url(#${id}a)"><circle cx="${E.cx}" cy="${E.cy}" r="${E.pupil}" fill="${pupil}" clip-path="url(#${id}b)"/></g>`;
+        }
+        return s;
+      }
+      const $ = (id) => document.getElementById(id);
+      const st = { mini: 1, chip: 1, icon: 0, amber: 0, job: 34, remain: 34261 };
+      const AMBER = "#ffb340";
+      function draw() {
+        const on = st.amber > 0.5;
+        $("miniEye").innerHTML = eyeMarkup("mini", on ? 0.18 + 0.82 * st.mini : 0, on ? AMBER : "#fff", on ? AMBER : null);
+        $("bigEye").innerHTML = eyeMarkup("big", on ? 1 : 0, on ? AMBER : "#fff", on ? AMBER : null);
+        $("chipEye").innerHTML = eyeMarkup("chip", st.chip, st.chip > 0.01 ? AMBER : "#a19ca8", st.chip > 0.01 ? AMBER : null);
+        $("iconEye").innerHTML = eyeMarkup("icon", st.icon, "#f2efe9", AMBER);
+        const pct = Math.round(st.job);
+        $("jobFill").style.width = pct + "%";
+        $("jobSub").textContent = `${pct}% · ${((20 * pct) / 100).toFixed(1)} GB of 20 GB`;
+        $("chipJob").textContent = pct >= 100 ? "Upload finished" : `Upload ${pct}%`;
+        $("chipJob").style.color = pct >= 100 ? "var(--green)" : "var(--ink)";
+        const s = Math.max(0, Math.round(st.remain)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+        $("chipTime").textContent = `${h}:${String(m).padStart(2, "0")}`;
+      }
+
+      const tl = gsap.timeline({ paused: true, onUpdate: draw });
+      const words = (sel, at, hold) => {
+        tl.fromTo(`${sel} .w`, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, stagger: 0.06, ease: "power2.out" }, at);
+        tl.to(`${sel} .w`, { opacity: 0, filter: "blur(8px)", duration: 0.18, stagger: 0.02, ease: "power2.in" }, at + hold);
+      };
+
+      // 1. The laptop, mid-upload (on screen from frame 0: it's the thumbnail)
+      tl.set("#cursor", { x: 1700, y: 760, scale: 1 }, 0);
+      tl.fromTo("#mac", { y: 18 }, { y: 0, duration: 1.2, ease: "expo.out" }, 0);
+      tl.fromTo(st, { job: 34 }, { job: 41, duration: 2.8, ease: "none" }, 0);
+      words("#t1", 0.1, 2.7);
+
+      // 2. The lid closes and everything stops
+      tl.fromTo("#lid", { scaleY: 1 }, { scaleY: 0.03, duration: 0.95, ease: "power2.in" }, 2.85);
+      tl.fromTo("#lidBack", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.in" }, 3.45);
+      tl.fromTo("#screenDim", { opacity: 0 }, { opacity: 0.85, duration: 0.95, ease: "power2.in" }, 2.85);
+      tl.fromTo("#s1card", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 3.8);
+      tl.to("#s1card", { opacity: 0, duration: 0.2 }, 6.05);
+      words("#t2", 3.85, 2.75);
+
+      // Lid back up, zoom into the menu bar
+      tl.to("#lid", { scaleY: 1, duration: 0.6, ease: "power3.out" }, 6.3);
+      tl.to("#lidBack", { opacity: 0, duration: 0.2 }, 6.3);
+      tl.to("#screenDim", { opacity: 0, duration: 0.5, ease: "power2.out" }, 6.3);
+      tl.fromTo("#macWrap", { scale: 1, transformOrigin: "1255px 290px" }, { scale: 7, duration: 0.55, ease: "power3.in" }, 6.75);
+      tl.fromTo("#desk", { opacity: 0, scale: 1.12, filter: "blur(12px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 7.1);
+
+      // 3. The real popover
+      words("#t3", 7.65, 1.8);
+      tl.to("#cursor", { x: 1385, y: 24, duration: 0.7, ease: "power3.out" }, 7.8);
+      tl.to("#cursor", { scale: 0.86, duration: 0.07, yoyo: true, repeat: 1, ease: "power1.inOut" }, 8.55);
+      tl.set("#p2h", { opacity: 1 }, 8.62);
+      tl.fromTo("#pop", { opacity: 0, scale: 0.94, y: -10, transformOrigin: "285px 0px" }, { opacity: 1, scale: 1, y: 0, duration: 0.35, ease: "expo.out" }, 8.62);
+      words("#t4", 9.75, 3.0);
+      tl.to("#cursor", { x: 1560, y: 300, duration: 0.5, ease: "power2.inOut" }, 9.1);
+      tl.to("#cursor", { scale: 0.9, duration: 0.08 }, 9.65);
+      const steps = ["#p3h", "#p4h", "#p6h", "#p8h", "#pAm"];
+      let prev = "#p2h";
+      steps.forEach((sel, i) => {
+        const at = 9.8 + i * 0.2;
+        tl.to("#cursor", { x: 1560 - (i + 1) * 84, duration: 0.2, ease: "none" }, at - 0.2);
+        tl.set(prev, { opacity: 0 }, at);
+        tl.set(sel, { opacity: 1 }, at);
+        prev = sel;
+      });
+      tl.to("#cursor", { scale: 1, duration: 0.1 }, 10.85);
+      tl.to("#cursor", { x: 1385, y: 452, duration: 0.55, ease: "power2.inOut" }, 11.2);
+      tl.to("#cursor", { scale: 0.86, duration: 0.07, yoyo: true, repeat: 1 }, 11.85);
+      tl.set("#pAm", { opacity: 0 }, 11.92);
+      tl.set("#pRun", { opacity: 1 }, 11.92);
+      tl.set(st, { amber: 1 }, 11.92);
+      tl.set("#bigTime", { opacity: 1 }, 11.92);
+      tl.fromTo("#bigEye", { scale: 0.7, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.45, ease: "back.out(2)" }, 11.92);
+      tl.to("#cursor", { x: 1820, y: 900, duration: 0.6, ease: "power2.in" }, 12.4);
+
+      // Back out to the laptop
+      tl.to("#desk", { opacity: 0, scale: 1.1, filter: "blur(12px)", duration: 0.3, ease: "power2.in" }, 13.05);
+      tl.set("#miniTime", { opacity: 1 }, 13.1);
+      tl.to("#macWrap", { scale: 1, duration: 0.6, ease: "expo.out" }, 13.1);
+
+      // 4. Lid closed, and it keeps going
+      tl.to(st, { job: 44, duration: 1.0, ease: "none" }, 13.3);
+      tl.to("#lid", { scaleY: 0.03, duration: 0.95, ease: "power2.in" }, 13.9);
+      tl.to("#lidBack", { opacity: 1, duration: 0.35, ease: "power1.in" }, 14.5);
+      tl.to("#screenDim", { opacity: 0.85, duration: 0.95, ease: "power2.in" }, 13.9);
+      tl.fromTo("#s2card", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, 14.95);
+      words("#t5", 15.05, 2.6);
+      tl.fromTo(st, { job: 44 }, { job: 100, duration: 3.2, ease: "power1.inOut", immediateRender: false }, 15.3);
+      tl.fromTo(st, { remain: 34261 }, { remain: 0, duration: 4.4, ease: "power1.in", immediateRender: false }, 15.3);
+      tl.fromTo(st, { chip: 1 }, { chip: 0.18, duration: 4.4, ease: "power1.in", immediateRender: false }, 15.3);
+      words("#t6", 18.05, 2.95);
+      tl.to(st, { chip: 0, duration: 0.25, ease: "power2.in" }, 19.7);
+      tl.to("#s2card", { opacity: 0, duration: 0.25 }, 20.5);
+
+      // 5. End card
+      tl.to("#mac", { opacity: 0, filter: "blur(10px)", duration: 0.35, ease: "power2.in" }, 20.55);
+      tl.fromTo("#icon", { opacity: 0, scale: 0.86 }, { opacity: 1, scale: 1, duration: 0.6, ease: "expo.out" }, 20.95);
+      tl.fromTo(st, { icon: 0 }, { icon: 1, duration: 0.55, ease: "power3.out", immediateRender: false }, 21.45);
+      tl.fromTo("#iconGlow", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 21.5);
+      tl.fromTo("#wordmark", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 21.85);
+      tl.fromTo("#endLine", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, 22.1);
+      tl.fromTo("#endUrl", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out" }, 22.35);
+      tl.set({}, {}, 25);
+
+      draw();
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

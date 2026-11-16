@@ -11,7 +11,11 @@ VERSION="$(cat VERSION)"
 BUILD="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
 BUNDLE_ID="${BUNDLE_ID:-app.wink.mac}"
 SIGN_ID="${SIGN_ID:--}"
-APP="dist/Wink.app"
+# Assemble and sign outside the repo: iCloud-synced folders (Desktop, Documents)
+# add Finder attributes to bundles, and codesign refuses to sign those.
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/wink-build.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
+APP="$WORK/Wink.app"
 
 echo "→ Building Wink $VERSION ($BUILD)"
 rm -rf dist build/AppIcon.iconset
@@ -32,10 +36,12 @@ sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" -e "s/__BUNDLE_ID__/$B
   Resources/Info.plist > "$APP/Contents/Info.plist"
 
 echo "→ Drawing the icon"
-"$ARM" --iconset build/AppIcon.iconset
-iconutil -c icns build/AppIcon.iconset -o "$APP/Contents/Resources/AppIcon.icns"
+"$ARM" --iconset "$WORK/AppIcon.iconset"
+iconutil -c icns "$WORK/AppIcon.iconset" -o "$APP/Contents/Resources/AppIcon.icns"
+cp bin/wink "$APP/Contents/Resources/wink" && chmod +x "$APP/Contents/Resources/wink"
 
 echo "→ Signing ($SIGN_ID)"
+xattr -cr "$APP"
 if [[ "$SIGN_ID" == "-" ]]; then
   codesign --force --sign - "$APP"
 else
@@ -44,13 +50,20 @@ fi
 codesign --verify --strict "$APP"
 
 echo "→ Packaging"
-ditto -c -k --sequesterRsrc --keepParent "$APP" "dist/Wink-$VERSION.zip"
+ditto -c -k --norsrc --keepParent "$APP" "$WORK/Wink-$VERSION.zip"
 
-STAGE="build/dmg"
-rm -rf "$STAGE" && mkdir -p "$STAGE"
-cp -R "$APP" "$STAGE/"
+STAGE="$WORK/dmg"
+mkdir -p "$STAGE"
+ditto "$APP" "$STAGE/Wink.app"
 ln -s /Applications "$STAGE/Applications"
-hdiutil create -volname "Wink" -srcfolder "$STAGE" -ov -format UDZO "dist/Wink-$VERSION.dmg" >/dev/null
+hdiutil create -volname "Wink" -srcfolder "$STAGE" -ov -format UDZO "$WORK/Wink-$VERSION.dmg" >/dev/null
 
-shasum -a 256 "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" | tee dist/SHA256SUMS.txt
+cp "$WORK/Wink-$VERSION.zip" "$WORK/Wink-$VERSION.dmg" dist/
+ditto "$APP" dist/Wink.app
+
+# Unversioned copies so releases/latest/download/Wink.dmg always works.
+cp "dist/Wink-$VERSION.zip" dist/Wink.zip
+cp "dist/Wink-$VERSION.dmg" dist/Wink.dmg
+
+(cd dist && shasum -a 256 "Wink-$VERSION.zip" "Wink-$VERSION.dmg" Wink.zip Wink.dmg | tee SHA256SUMS.txt)
 echo "✓ dist/Wink.app  dist/Wink-$VERSION.zip  dist/Wink-$VERSION.dmg"
