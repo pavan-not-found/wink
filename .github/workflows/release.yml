@@ -27,4 +27,4 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/Wink.zip dist/Wink.dmg dist/SHA256SUMS.txt \
             --title "Wink $VERSION" --generate-notes || \
-          gh release upload "$GITHUB_REF_NAME" "dist/Wink-$VERSION.zip" "dist/Wink-$VERSION.dmg" dist/Wink.zip dist/Wink.dmg dist/SHA256SUMS.txt --clobber
+          echo "A release for $GITHUB_REF_NAME already exists; keeping the files attached to it."
