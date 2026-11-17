@@ -13,7 +13,7 @@ Attach: `wink-launch-1080p.mp4`
 >
 > So I built Wink. Pick how long in the menu bar, close the lid, and your Mac keeps going. When the time is up, it sleeps like normal.
 >
-> Free and open source: github.com/pavan-parallel/wink
+> Free and open source: github.com/pavan-not-found/wink
 
 ### Replies under it (post as a thread, one at a time)
 
@@ -67,7 +67,7 @@ Attach: `wink-launch-vertical-1080x1920.mp4` (it fills the phone screen in the f
 >
 > It's free and open source, and it stops on its own at low battery or if the Mac gets very hot. If you try it, I'd like to hear what's missing.
 >
-> github.com/pavan-parallel/wink
+> github.com/pavan-not-found/wink
 
 ---
 
@@ -77,7 +77,7 @@ Title:
 
 > Show HN: Wink, a menu bar timer that keeps a closed MacBook awake
 
-URL: `https://github.com/pavan-parallel/wink`
+URL: `https://github.com/pavan-not-found/wink`
 
 First comment (post right after submitting):
 
@@ -113,7 +113,7 @@ Body (attach `images/hero.png` and the film):
 >
 > It's free, MIT licensed and makes no network requests. Feedback welcome, especially on the design.
 >
-> github.com/pavan-parallel/wink
+> github.com/pavan-not-found/wink
 
 ---
 
@@ -142,6 +142,6 @@ Gallery, in order: the film, `hero.png`, `states.png`, `icon-states.png`, `pmset
 > Hey! I made a small Mac app called Wink. If you've ever had to keep your laptop open so a download, call recording or upload wouldn't stop, it fixes that: you pick how long, close the lid, and it keeps going. It's free. Would you try it and tell me if anything is confusing?
 >
 > Install: open Terminal and paste this
-> curl -fsSL https://raw.githubusercontent.com/pavan-parallel/wink/main/scripts/install.sh | bash
+> curl -fsSL https://raw.githubusercontent.com/pavan-not-found/wink/main/scripts/install.sh | bash
 >
-> Or download it here: pavan-parallel.github.io/wink
+> Or download it here: pavan-not-found.github.io/wink

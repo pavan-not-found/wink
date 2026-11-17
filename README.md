@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/pavan-parallel/wink/releases/latest/download/Wink.dmg"><b>Download for macOS</b></a>
+  <a href="https://github.com/pavan-not-found/wink/releases/latest/download/Wink.dmg"><b>Download for macOS</b></a>
   &nbsp;·&nbsp; macOS 14 or later &nbsp;·&nbsp; Apple silicon and Intel &nbsp;·&nbsp; Free and open source
 </p>
 
@@ -31,10 +31,10 @@ Wink does it from the menu bar. Drag the ruler to choose how long, press Keep aw
 Paste this into Terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/pavan-parallel/wink/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/pavan-not-found/wink/main/scripts/install.sh | bash
 ```
 
-Or download the DMG from [Releases](https://github.com/pavan-parallel/wink/releases/latest) and drag Wink into Applications. Wink isn't notarized by Apple yet, so the first time you open it, right-click the app and choose Open. The install script handles that for you.
+Or download the DMG from [Releases](https://github.com/pavan-not-found/wink/releases/latest) and drag Wink into Applications. Wink isn't notarized by Apple yet, so the first time you open it, right-click the app and choose Open. The install script handles that for you.
 
 ## What it does
 
@@ -105,7 +105,7 @@ With the popover open: left and right arrows move the ruler, Return starts, Spac
 ## Build from source
 
 ```sh
-git clone https://github.com/pavan-parallel/wink.git && cd wink
+git clone https://github.com/pavan-not-found/wink.git && cd wink
 scripts/build.sh          # builds dist/Wink.app, a zip and a dmg
 open dist/Wink.app
 ```

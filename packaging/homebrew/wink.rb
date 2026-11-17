@@ -2,15 +2,15 @@
 # To publish: create a repo named homebrew-tap under your GitHub account,
 # put this file at Casks/wink.rb, and fill in the sha256 of the release's Wink.zip
 # (it's in SHA256SUMS.txt on the release). Then anyone can run:
-#   brew install --cask pavan-parallel/tap/wink
+#   brew install --cask pavan-not-found/tap/wink
 cask "wink" do
   version "1.0.0"
   sha256 "REPLACE_WITH_SHA256_OF_Wink-1.0.0.zip"
 
-  url "https://github.com/pavan-parallel/wink/releases/download/v#{version}/Wink-#{version}.zip"
+  url "https://github.com/pavan-not-found/wink/releases/download/v#{version}/Wink-#{version}.zip"
   name "Wink"
   desc "Keep your Mac awake with the lid closed, on a timer, from the menu bar"
-  homepage "https://github.com/pavan-parallel/wink"
+  homepage "https://github.com/pavan-not-found/wink"
 
   depends_on macos: ">= :sonoma"
 

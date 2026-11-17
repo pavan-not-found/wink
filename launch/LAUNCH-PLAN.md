@@ -10,13 +10,13 @@ Goal: 100 to 200 people download Wink in the first few days.
    - Press the stop button. Your Mac sleeps normally again.
 2. **Your Mac has been set to never sleep since your old `pmset` command.** When the popover shows "Your Mac is set to never sleep", press "Turn normal sleep back on" once you no longer need it. (I left it alone because another task was running overnight.)
 3. **Confirm the name.** Everything says Wink. If you change it, the name lives in `Resources/Info.plist`, `Sources/Wink`, the README, `docs/index.html`, `launch/POSTS.md` and the film's end card.
-4. **Pick the GitHub account.** The links point to `github.com/pavan-parallel/wink`. That account has no followers and looks like a work account. If you'd rather launch from a personal account, tell me which one and I'll change every link.
+4. **Fill in your GitHub profile.** The account is `pavan-not-found`. Add a photo, your name, a one-line bio and your X handle, because people who click through from a post will look at who made it.
 
 ## 2. Publishing (I can do these once you say go)
 
 - [ ] Create the public repo and push.
 - [ ] Tag `v1.0.0`. The GitHub Action builds Wink and attaches `Wink.dmg` and `Wink.zip` to the release. (Or I upload the build that's already in `dist/`.)
-- [ ] Turn on GitHub Pages from the `docs/` folder, so the site is live at `pavan-parallel.github.io/wink`.
+- [ ] Turn on GitHub Pages from the `docs/` folder, so the site is live at `pavan-not-found.github.io/wink`.
 - [ ] Set the repo's social preview image to `docs/assets/og.png` (Settings → Social preview; this one is manual).
 - [ ] Add repo topics: `macos`, `menubar`, `swiftui`, `caffeinate`, `sleep`, `productivity`.
 - [ ] Optional: publish the Homebrew cask from `packaging/homebrew/wink.rb`.
@@ -51,7 +51,7 @@ All the copy is in `launch/POSTS.md`. The film is `launch/wink-launch-1080p.mp4`
 ## 5. Tracking downloads
 
 ```sh
-gh api repos/pavan-parallel/wink/releases --jq '.[].assets[] | "\(.name): \(.download_count)"'
+gh api repos/pavan-not-found/wink/releases --jq '.[].assets[] | "\(.name): \(.download_count)"'
 ```
 
 Install-script downloads count as `Wink.zip`, and DMG downloads as `Wink.dmg`. Stars and traffic are under the repo's Insights tab.

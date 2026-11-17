@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Installs the latest Wink into /Applications.
 #
-#   curl -fsSL https://raw.githubusercontent.com/pavan-parallel/wink/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/pavan-not-found/wink/main/scripts/install.sh | bash
 #
 # Wink isn't notarized yet, so a downloaded copy gets macOS's "unidentified developer"
 # warning. This script removes the quarantine flag on the app it just downloaded,
 # which is the same thing as right-clicking it and choosing Open.
 set -euo pipefail
 
-REPO="${WINK_REPO:-pavan-parallel/wink}"
+REPO="${WINK_REPO:-pavan-not-found/wink}"
 echo "Finding the latest Wink release…"
 URL="${WINK_ZIP_URL:-https://github.com/$REPO/releases/latest/download/Wink.zip}"
 

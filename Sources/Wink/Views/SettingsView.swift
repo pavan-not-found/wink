@@ -84,7 +84,7 @@ struct SettingsView: View {
                 Text("Wink \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev")")
                     .font(.system(size: 12)).foregroundStyle(.tertiary)
                 Spacer()
-                Button("GitHub") { NSWorkspace.shared.open(URL(string: "https://github.com/pavan-parallel/wink")!) }
+                Button("GitHub") { NSWorkspace.shared.open(URL(string: "https://github.com/pavan-not-found/wink")!) }
                     .buttonStyle(.plain)
                     .font(.system(size: 12)).foregroundStyle(.secondary)
                 Button("Quit") { NSApp.terminate(nil) }

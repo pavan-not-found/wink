@@ -157,7 +157,7 @@ final class Power {
             return .failure(.message("Wink couldn't read your account name."))
         }
         let lines = [
-            "# Added by Wink (https://github.com/pavan-parallel/wink) so it can keep your Mac",
+            "# Added by Wink (https://github.com/pavan-not-found/wink) so it can keep your Mac",
             "# awake with the lid closed. It allows exactly these two commands, nothing else.",
             "# To remove it: sudo rm /etc/sudoers.d/wink",
             "\(user) ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0, /usr/bin/pmset -a disablesleep 1",
